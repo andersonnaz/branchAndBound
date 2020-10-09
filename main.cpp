@@ -92,8 +92,6 @@ int main(int argc, char const *argv[])
 
 	algGuloso(valorItens, pesoItens, custoBeneficio, qtdItens);
 	
-	cout << custoBeneficio[0] << endl;
-	
 	delete[]custoBeneficio;
 	return 0;
 }
