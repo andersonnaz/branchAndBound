@@ -7,41 +7,47 @@
 using namespace std;
 
 struct No {
-	list<int> variaveisNo; //itens escolhidos para colocar na mochila, 1 - item na mochila, 0 - não está na mochila
+	int *variaveisNo; //itens escolhidos para colocar na mochila, 1 - item na mochila, 0 - não está na mochila
 	float maiorLimite;
 	float menorLimite;
 	float funcaoObjetivo;
 };
 
-float algGuloso(*valorItens, *pesoItens){
+void algGuloso(int valorItens[], int pesoItens[], float *&custoBeneficio, int qtdItens){ //decide qual item tem prioridade na mochila
+	int j, k, max; 
 	float aux;
-	float *custoBeneficioOrdenado[valorItens.size()];
-	for (int i = 0; i < valorItens.size(); i++){
-		custoBeneficioOrdenado = valorItens[i]/pesoItens[i];
+	for(int i = 0; i < qtdItens; i++){
+		custoBeneficio[i] = valorItens[i]/pesoItens[i];
+		cout << custoBeneficio[i] << " ";
 	}
-	aux = custoBeneficioOrdenado[0];
-	aux2 = custoBeneficioOrdenado[0]; 
-	for(int i = 0; i < valorItens.size(); i++){
-		for(int j = 0; j < valorItens.size(); j++){
-			if(aux < custoBeneficioOrdenado[j]){
-				aux = custoBeneficioOrdenado[j];
-				custoBeneficioOrdenado[j] = aux2;
-				custoBeneficioOrdenado[i] = aux;
-				aux2 = aux;
-			}						
-		}
-	}
+	cout << endl;
+	
+	for(j = 0; j < (qtdItens-1); j++){
+    	max = j;
+    	for(k = j+1; k < qtdItens; k++) {
+      		/* Caso tenha algum numero menor ele faz a troca do minimo*/
+      		if(custoBeneficio[k] > custoBeneficio[max]){
+   				max = j;
+      		}
+    	}
+    	/* Se o minimo for diferente do primeiro numero não ordenado ele faz a troca para ordena-los*/
+    	if(j != max){
+      		aux = custoBeneficio[j];
+      		custoBeneficio[j] = custoBeneficio[max];
+      		custoBeneficio[max] = aux;
+    	}
+
+		cout << custoBeneficio[j] << " ";
+  	}
 	//retorna o valor ordenado mas não guarda o índice que corresponde a variável,
 	//pensar em uma forma de retornar o índice junto com a razão em um vetor ordenado.
-	return custoBeneficioOrdenado;
 }
 
 int main(int argc, char const *argv[])
 {
 	int qtdItens, capacidadeMochila;
-	list<int> variaveis;
-	list<int>::iterator it;
 	No no;
+	no.variaveisNo = new int[qtdItens];
 
 	ifstream arqEntrada;
 	arqEntrada.open("entrada.txt");
@@ -49,16 +55,14 @@ int main(int argc, char const *argv[])
 	arqEntrada >> capacidadeMochila;
 	
 	for(int i = 0; i < qtdItens; i++){
-		variaveis.push_front(0); //variáveis setadas em 0
+		no.variaveisNo[i] = 0; //variáveis setadas em 0
 	};
+	
+	int valorItens[qtdItens]; //valor financeiro de cada item
+	int pesoItens[qtdItens]; //peso de cada item
+	float *custoBeneficio = new float[qtdItens]; //custo benefício, razão entre o valor do produto e o peso
 
-	no.variaveisNo = variaveis;
-	
-	int *valorItens[qtdItens]; //valor financeiro de cada item
-	int *pesoItens[qtdItens]; //peso de cada item
-	float *custoBeneficio[qtdItens] //custo benefício, razão entre o valor do produto e o peso
-	
-	for (int i = 0; i < qtdItens; i++){
+	for(int i = 0; i < qtdItens; i++){
 		arqEntrada >> valorItens[i];
 	};
 
@@ -80,14 +84,17 @@ int main(int argc, char const *argv[])
 
 	cout << endl;
 
-	for (it = variaveis.begin(); it != variaveis.end(); it++){
-		cout << *it << " ";
+	for (int i = 0; i < qtdItens; i++){
+		cout << no.variaveisNo[i] << " ";
 	} 
 	cout << endl;
 	arqEntrada.close();
 
-	custoBeneficio = algGuloso(valorItens, pesoItens);
+	algGuloso(valorItens, pesoItens, custoBeneficio, qtdItens);
 	
+	cout << custoBeneficio[0] << endl;
+	
+	delete[]custoBeneficio;
 	return 0;
 }
 
