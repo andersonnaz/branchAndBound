@@ -6,95 +6,101 @@
 
 using namespace std;
 
-struct No {
-	int *variaveisNo; //itens escolhidos para colocar na mochila, 1 - item na mochila, 0 - não está na mochila
+struct No{
+	int *variaveisNo; //itens escolhidos para colocar na mochila, 1 - item na mochila, 0 - n�o est� na mochila
 	float maiorLimite;
 	float menorLimite;
 	float funcaoObjetivo;
 };
 
-void algGuloso(int valorItens[], int pesoItens[], float *&custoBeneficio, int qtdItens){ //decide qual item tem prioridade na mochila
-	int j, k, max; 
-	float aux;
+struct itens{
+    int chave;
+    float valor; // custo beneficio
+};
+
+void algGuloso(int *valorItens, int *pesoItens, itens *&custoBeneficio, int qtdItens){ //decide qual item tem prioridade na mochila
+	int j, k, max;
+	float aux, aux_chave;
 	for(int i = 0; i < qtdItens; i++){
-		custoBeneficio[i] = valorItens[i]/pesoItens[i];
-		cout << custoBeneficio[i] << " ";
+		custoBeneficio[i].valor = (float)valorItens[i]/pesoItens[i];
 	}
-	cout << endl;
-	
+
 	for(j = 0; j < qtdItens; j++){
     	max = j;
     	for(k = j+1; k < qtdItens; k++) {
-      		if(custoBeneficio[k] > custoBeneficio[max]){
+      		if(custoBeneficio[k].valor > custoBeneficio[max].valor){
    				max = k;
       		}
     	}
     	if(j != max){
-      		aux = custoBeneficio[j];
-      		custoBeneficio[j] = custoBeneficio[max];
-      		custoBeneficio[max] = aux;
+      		aux = custoBeneficio[j].valor;
+      		aux_chave = custoBeneficio[j].chave;
+
+      		custoBeneficio[j].valor = custoBeneficio[max].valor;
+      		custoBeneficio[j].chave = custoBeneficio[max].chave;
+
+      		custoBeneficio[max].valor = aux;
+      		custoBeneficio[max].chave = aux_chave;
     	}
 
   	}
 
-	for (int x = 0; x < qtdItens; x++){
-		cout << custoBeneficio[x] << " ";
-	}
-	//retorna o valor ordenado mas não guarda o índice que corresponde a variável,
-	//pensar em uma forma de retornar o índice junto com a razão em um vetor ordenado.
 }
 
-int main(int argc, char const *argv[])
+int main()
 {
 	int qtdItens, capacidadeMochila;
 	No no;
 	no.variaveisNo = new int[qtdItens];
 
 	ifstream arqEntrada;
-	arqEntrada.open("entrada.txt");
+	arqEntrada.open("entrada2.txt");
 	arqEntrada >> qtdItens;
 	arqEntrada >> capacidadeMochila;
-	
-	for(int i = 0; i < qtdItens; i++){
-		no.variaveisNo[i] = 0; //variáveis setadas em 0
-	};
-	
-	int valorItens[qtdItens]; //valor financeiro de cada item
-	int pesoItens[qtdItens]; //peso de cada item
-	float *custoBeneficio = new float[qtdItens]; //custo benefício, razão entre o valor do produto e o peso
 
-	for(int i = 0; i < qtdItens; i++){
+	int *valorItens; //valor financeiro de cada item
+	int *pesoItens; //peso de cada item
+
+    valorItens = new int[qtdItens];
+    pesoItens = new int[qtdItens];
+
+    itens *custoBeneficio = new itens[qtdItens]; //custo benef�cio, raz�o entre o valor do produto e o peso
+
+	for (int i = 0; i < qtdItens; i++){
 		arqEntrada >> valorItens[i];
-	};
+	}
 
 	for (int i = 0; i < qtdItens; i++){
 		arqEntrada >> pesoItens[i];
-	};
+	}
 
-	cout << qtdItens << endl;
-	cout << capacidadeMochila << endl;
-	for (int i = 0; i < qtdItens; i++){
-		cout << valorItens[i] << " ";
-	};
-
-	cout << endl;
-	
-	for (int i = 0; i < qtdItens; i++){
-		cout << pesoItens[i] << " ";
-	};
-
-	cout << endl;
-
-	for (int i = 0; i < qtdItens; i++){
-		cout << no.variaveisNo[i] << " ";
-	} 
-	cout << endl;
 	arqEntrada.close();
 
-	algGuloso(valorItens, pesoItens, custoBeneficio, qtdItens);
-	
 
+	cout << qtdItens << endl;
+	cout << capacidadeMochila << endl << endl;
+
+    for(int i = 0; i < qtdItens; i++){
+		custoBeneficio[i].valor = 0;
+		custoBeneficio[i].chave = i;
+	}
+
+	for (int x = 0; x < qtdItens; x++){
+        cout << "["<< custoBeneficio[x].chave << "]";
+		cout << custoBeneficio[x].valor << " ";
+	}
+
+	algGuloso(valorItens, pesoItens, custoBeneficio, qtdItens);
+    cout << "\n\n";
+    for (int x = 0; x < qtdItens; x++){
+        cout << "["<< custoBeneficio[x].chave << "]";
+		cout <<  custoBeneficio[x].valor << " ";
+	}
+
+	delete[]valorItens;
+	delete[]pesoItens;
 	delete[]custoBeneficio;
+	cout << "\n\n";
+	system("pause");
 	return 0;
 }
-
