@@ -22,23 +22,24 @@ void algGuloso(int valorItens[], int pesoItens[], float *&custoBeneficio, int qt
 	}
 	cout << endl;
 	
-	for(j = 0; j < (qtdItens-1); j++){
+	for(j = 0; j < qtdItens; j++){
     	max = j;
     	for(k = j+1; k < qtdItens; k++) {
-      		/* Caso tenha algum numero menor ele faz a troca do minimo*/
       		if(custoBeneficio[k] > custoBeneficio[max]){
-   				max = j;
+   				max = k;
       		}
     	}
-    	/* Se o minimo for diferente do primeiro numero não ordenado ele faz a troca para ordena-los*/
     	if(j != max){
       		aux = custoBeneficio[j];
       		custoBeneficio[j] = custoBeneficio[max];
       		custoBeneficio[max] = aux;
     	}
 
-		cout << custoBeneficio[j] << " ";
   	}
+
+	for (int x = 0; x < qtdItens; x++){
+		cout << custoBeneficio[x] << " ";
+	}
 	//retorna o valor ordenado mas não guarda o índice que corresponde a variável,
 	//pensar em uma forma de retornar o índice junto com a razão em um vetor ordenado.
 }
@@ -92,6 +93,7 @@ int main(int argc, char const *argv[])
 
 	algGuloso(valorItens, pesoItens, custoBeneficio, qtdItens);
 	
+
 	delete[]custoBeneficio;
 	return 0;
 }
