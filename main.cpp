@@ -50,14 +50,17 @@ void algGuloso(int *valorItens, int *pesoItens, itens *&custoBeneficio, int qtdI
 
 void relaxacaoLinear(No no, itens *&custoBeneficio, int qtdItens, int *valorItens, int *pesoItens){
 	for(int i = 0; i < qtdItens; i++){
-		if(pesoItens[custoBeneficio->chave[i]] <= no.capacidadeMochilaNo){
-			no.variaveisNo[custoBeneficio->chave[i]] = 1;
-			no.capacidadeMochilaNo -= pesoItens[custoBeneficio->chave[i]];
-			no.funcaoObjetivo += custoBeneficio->valor[i];
+		if(pesoItens[custoBeneficio[i].chave] <= no.capacidadeMochilaNo){
+			no.variaveisNo[custoBeneficio[i].chave] = 1;
+			no.capacidadeMochilaNo -= pesoItens[custoBeneficio[i].chave];
+			no.funcaoObjetivo += custoBeneficio[i].valor;
+			cout << no.funcaoObjetivo << " " ;
 		}else{
 			if (no.capacidadeMochilaNo > 0){
-				no.variaveisNo[custoBeneficio->chave[i]] = (float)no.capacidadeMochilaNo/pesoItens[custoBeneficio->chave[i]];
-				no.funcaoObjetivo += (custoBeneficio->valor[i]*(float)no.capacidadeMochilaNo/pesoItens[custoBeneficio->chave[i]]);
+				cout << "entrou" << endl;
+				no.variaveisNo[custoBeneficio[i].chave] = (float)no.capacidadeMochilaNo/pesoItens[custoBeneficio[i].chave];
+				no.funcaoObjetivo += custoBeneficio[i].valor*no.variaveisNo[custoBeneficio[i].chave];
+				cout << no.funcaoObjetivo << " " ;
 				no.capacidadeMochilaNo = 0;
 			}
 		}
@@ -68,18 +71,18 @@ void relaxacaoLinear(No no, itens *&custoBeneficio, int qtdItens, int *valorIten
 int main()
 {
 	int qtdItens;
-	const *capacidadeMochila;
+	int capacidadeMochila;
 	No no;
 	no.variaveisNo = new float[qtdItens];
 	for(int i = 0; i < qtdItens; i++){
 		no.variaveisNo[i] = 0;
 	}
-
+	no.funcaoObjetivo = 0;
 	ifstream arqEntrada;
-	arqEntrada.open("entrada.txt");
+	arqEntrada.open("entrada2.txt");
 	arqEntrada >> qtdItens;
 	arqEntrada >> capacidadeMochila;
-	no.capacidadeMochilaNo = 0;
+	no.capacidadeMochilaNo = capacidadeMochila;
 	int *valorItens; //valor financeiro de cada item
 	int *pesoItens; //peso de cada item
 
@@ -99,26 +102,32 @@ int main()
 	arqEntrada.close();
 
 
-	cout << qtdItens << endl;
-	cout << capacidadeMochila << endl;
+	cout << "Quantidade de Itens: " << qtdItens << endl;
+	cout << "Capacidade da Mochila: " << capacidadeMochila << endl;
 
     for(int i = 0; i < qtdItens; i++){
 		custoBeneficio[i].valor = 0;
 		custoBeneficio[i].chave = i;
 	}
 
+	cout << "vetor custoBeneficio inicializado: ";
 	for (int x = 0; x < qtdItens; x++){
         cout << "["<< custoBeneficio[x].chave << "]";
 		cout << custoBeneficio[x].valor << " ";
 	}
+	cout << endl;
 
 	algGuloso(valorItens, pesoItens, custoBeneficio, qtdItens);
-    
-	cout << "\n\n";
+    cout << "vetor custoBeneficio ordenado: ";
     for (int x = 0; x < qtdItens; x++){
         cout << "["<< custoBeneficio[x].chave << "]";
 		cout <<  custoBeneficio[x].valor << " ";
 	}
+	cout << endl;
+	
+	relaxacaoLinear(no, custoBeneficio, qtdItens, valorItens, pesoItens);
+
+	
 
 	delete[]valorItens;
 	delete[]pesoItens;
