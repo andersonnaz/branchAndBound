@@ -7,9 +7,9 @@
 using namespace std;
 
 struct No{
-	float *variaveisNo; //itens escolhidos para colocar na mochila, 1 - item na mochila, 0 - n�o est� na mochila
-	float maiorLimite;
-	float menorLimite;
+	float *variaveisNo; //itens escolhidos para colocar na mochila, 1 - item na mochila, 0 - nao esta na mochila
+	float maiorLimiteNo;
+	float menorLimiteNo;
 	float funcaoObjetivo;
 	int capacidadeMochilaNo;
 };
@@ -48,19 +48,24 @@ void algGuloso(int *valorItens, int *pesoItens, itens *&custoBeneficio, int qtdI
 
 }
 
-void relaxacaoLinear(No no, itens *&custoBeneficio, int qtdItens, int *valorItens, int *pesoItens){
+void gerarFilhos(){
+
+};
+
+void relaxacaoLinearFilho(){
+
+};
+
+void relaxacaoLinearRaiz(No *&no, itens *&custoBeneficio, int qtdItens, int *valorItens, int *pesoItens){
 	for(int i = 0; i < qtdItens; i++){
 		if(pesoItens[custoBeneficio[i].chave] <= no.capacidadeMochilaNo){
 			no.variaveisNo[custoBeneficio[i].chave] = 1;
 			no.capacidadeMochilaNo -= pesoItens[custoBeneficio[i].chave];
-			no.funcaoObjetivo += custoBeneficio[i].valor;
-			cout << no.funcaoObjetivo << " " ;
+			no.funcaoObjetivo += valorItens[custoBeneficio[i].chave];
 		}else{
 			if (no.capacidadeMochilaNo > 0){
-				cout << "entrou" << endl;
 				no.variaveisNo[custoBeneficio[i].chave] = (float)no.capacidadeMochilaNo/pesoItens[custoBeneficio[i].chave];
-				no.funcaoObjetivo += custoBeneficio[i].valor*no.variaveisNo[custoBeneficio[i].chave];
-				cout << no.funcaoObjetivo << " " ;
+				no.funcaoObjetivo += valorItens[custoBeneficio[i].chave]*no.variaveisNo[custoBeneficio[i].chave];
 				no.capacidadeMochilaNo = 0;
 			}
 		}
@@ -72,7 +77,7 @@ int main()
 {
 	int qtdItens;
 	int capacidadeMochila;
-	No no;
+	No *no;
 	no.variaveisNo = new float[qtdItens];
 	for(int i = 0; i < qtdItens; i++){
 		no.variaveisNo[i] = 0;
@@ -125,7 +130,16 @@ int main()
 	}
 	cout << endl;
 	
-	relaxacaoLinear(no, custoBeneficio, qtdItens, valorItens, pesoItens);
+	relaxacaoLinearRaiz(no, custoBeneficio, qtdItens, valorItens, pesoItens);
+	
+	cout << "capacidade da mochila:" << no.capacidadeMochilaNo << endl;
+	cout << "funcao objetivo:" << no.funcaoObjetivo << endl;
+	cout << "(";
+	for (int i = 0; i < qtdItens; i++){
+		cout << no.variaveisNo[i] << ", ";
+	}
+	cout << ")";
+
 
 	
 
