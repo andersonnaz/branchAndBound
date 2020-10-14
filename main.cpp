@@ -108,6 +108,13 @@ void relaxacao_linear(No &no, CUSTO_BENEFICIO *item, int qtd_itens, int capacida
     cout << "]" << endl << endl;
 }
 
+int verificarVariavelFracionaria(){
+
+    return 0;
+}
+
+
+
 int main()
 {
     int qtd_itens;
@@ -187,6 +194,73 @@ int main()
     arvore.push_front(no);
     cout << "\n[indice No] -> " << no.chave << "\n[Funcao objetivo] -> " << no.funcao_objetivo << "\n[capacidade mochila] -> " << no.capacidade_mochila << endl;
 
+    
+
+    //esboço de como ficará a descida.
+    No melhorSolucao;
+    melhorSolucao.funcao_objetivo = 0; //melhor solução inteira - MSI do vídeo
+    float melhorLimite = 0; //melhor limite - ML do vídeo
+    float gap = 0;//formula do gap -> (melhorLimite - MSI)/MSI 
+    bool stop = true;
+    int cont;
+    No noTemp;
+    bool variaveisFixadas[qtd_itens]; // true fixada em 1, false fixada em 0
+    marcar_indice = -1; //se o indice passar do for com valor = -1 não existe variável fracionária
+    while(stop){   
+        noTemp = arvore.remove; //variável no segura o item retirado da pilha
+        for (int i = 0; i < qtd_itens; i++){//for verifica qual variável é fracionária e salva seu índice
+            if((noTemp.solucao[i] > 0)&&(noTemp.solucao[i] < 1)){
+                marcar_indice = i;
+            }   
+        }
+        if(marcar_indice != -1){ //verifica se existe variável fracionária
+            variaveisFixadas[marcar_indice] = true; //fixa a varivel em true, se for para o lado esquerdo na descida muda-se para false
+            No filhoDireita;
+            No filhoEsquerda;
+            filhoDireita.capacidade_mochila = capacidade_mochila;
+            filhoEsquerda.capacidade_mochila = capacidade_mochila;
+            filhoDireita.funcao_objetivo = 0;
+            filhoEsquerda.funcao_objetivo = 0;
+            filhoDireita.solucao[marcar_indice] = 1; //fixando a variável para passar pra relaxação
+            filhoEsquerda.solucao[marcar_indice] = 0; //fixando a variável para passar pra relaxação
+            relaxacao_linear(filhoDireita);//usar o marcar_indice para fixar a variável na relaxação
+            relaxacao_linear(filhoEsquerda);//usar o marcar_indice para fixar a variável na relaxação
+            //botar uma condição na relaxação que se a capacidade da mochila estourar a mochila do nó = -1
+            if((filhoDireita.capacidade_mochila == -1)&&(filhoEsquerda.capacidade_mochila == -1)){
+                cout << "soluções invalidas para os filhos, iteração" << cont << endl;
+            }else if(filhoEsquerda.capacidade_mochila == -1){
+                arvore.push_front(filhoDireita);
+                cout << "filho da esquerda poda por inviabilidade" << endl;
+            }else if(filhoDireita.capacidade_mochila == -1){
+                arvore.push_front(filhoEsquerda);
+                variaveisFixadas[marcar_indice] = false;
+                cout << "filho da direita poda por inviabilidade" << endl;
+            }else{
+                if(filhoDireita.funcao_objetivo > filhoEsquerda.funcao_objetivo){ //verificação de qual é o melhor filho baseado no valor da função objetivo
+                    arvore.push_front(filhoEsquerda); //desce pra direita
+                    arvore.push_front(filhoDireita);
+                }else{
+                    arvore.push_front(filhoDireita); //desce pra esquerda
+                    arvore.push_front(filhoEsquerda);
+                    variaveisFixadas[marcar_indice] = false;
+                }
+            }         
+            
+        }else{ //guardar a melhor solução inteira.
+            if(melhorSolucao.funcao_objetivo < noTemp.funcao_objetivo){
+                melhorSolucao = noTemp;
+            }
+            //fazer uma consulta na pilha para saber qual é a maior funcaoObjetivo e salvar em melhorLimite
+            //para fazer o cálculo do gap.
+            
+        }
+
+
+        if(cont == 10){stop = false;};
+        cont++;
+        marcar_indice = -1;
+    }
+    
 
     cout << endl;
     delete[]valor_item;
