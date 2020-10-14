@@ -197,17 +197,19 @@ int main()
     
 
     //esboço de como ficará a descida.
-    No melhorSolucao;
-    melhorSolucao.funcao_objetivo = 0; //melhor solução inteira - MSI do vídeo
+    float melhorSolucaoInteira = 0; //melhor solução inteira - MSI do vídeo
     float melhorLimite = 0; //melhor limite - ML do vídeo
     float gap = 0;//formula do gap -> (melhorLimite - MSI)/MSI 
     bool stop = true;
     int cont;
     No noTemp;
+    No noAux;
     bool variaveisFixadas[qtd_itens]; // true fixada em 1, false fixada em 0
     marcar_indice = -1; //se o indice passar do for com valor = -1 não existe variável fracionária
+    list<No>aux;
+
     while(stop){   
-        noTemp = arvore.remove; //variável no segura o item retirado da pilha
+        noTemp = arvore.remove(); //variável no segura o item retirado da pilha
         for (int i = 0; i < qtd_itens; i++){//for verifica qual variável é fracionária e salva seu índice
             if((noTemp.solucao[i] > 0)&&(noTemp.solucao[i] < 1)){
                 marcar_indice = i;
@@ -247,18 +249,33 @@ int main()
             }         
             
         }else{ //guardar a melhor solução inteira.
-            if(melhorSolucao.funcao_objetivo < noTemp.funcao_objetivo){
-                melhorSolucao = noTemp;
+            if(melhorSolucaoInteira < noTemp.funcao_objetivo){
+                melhorSolucaoInteira = noTemp.funcao_objetivo;
             }
-            //fazer uma consulta na pilha para saber qual é a maior funcaoObjetivo e salvar em melhorLimite
-            //para fazer o cálculo do gap.
-            
+            int size = arvore.size();
+            for(int i = 0; i < size; i++){
+                noAux = arvore.remove(); //tirando os itens da pilha
+                if(melhorLimite < noAux.funcao_objetivo){ 
+                    melhorLimite = noAux.funcao_objetivo; //guardando o maior limite
+                }
+                aux.push_front(noAux);
+            }
+            for(int i = 0; i < size; i++){
+                arvore.push_front(aux.remove());//voltando os nós pra pilha original
+            }
+
+            gap = ((melhorLimite - melhorSolucaoInteira)/melhorSolucaoInteira); //cálculo do gap 
+
+            cout << "ML: " << melhorLimite << endl;
+            cout << "MSI: " << melhorSolucaoInteira << endl;
+            cout << "GAP: " << gap << endl;
         }
 
 
         if(cont == 10){stop = false;};
         cont++;
         marcar_indice = -1;
+        if(arvore.size() == 0){stop = false;};
     }
     
 
