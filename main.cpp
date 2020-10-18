@@ -97,6 +97,10 @@ void relaxacao_linear(No &no, CUSTO_BENEFICIO *item, int qtd_itens, int capacida
         }
 
     }
+    if(no.capacidade_mochila < 0){
+        no.capacidade_mochila = -1;
+    }
+
     cout << "<<" << marcar_indice << ">>\n";
     if(no.arvore.size()==0){
         no.arvore.push_back(no);
@@ -201,7 +205,7 @@ int main()
     float melhorLimite = 0; //melhor limite - ML do vídeo
     float gap = 0;//formula do gap -> (melhorLimite - MSI)/MSI 
     bool stop = true;
-    int cont;
+    int cont = 0;
     No noTemp;
     No noAux;
     bool variaveisFixadas[qtd_itens]; // true fixada em 1, false fixada em 0
@@ -209,7 +213,9 @@ int main()
     list<No>aux;
 
     while(stop){   
-        noTemp = arvore.remove(); //variável no segura o item retirado da pilha
+        cout << "cont: " << cont << endl;
+        noTemp = arvore.front(); //variável no segura o primeiro item da pilha
+        arvore.pop_front(); //remove o primeiro item da pilha
         for (int i = 0; i < qtd_itens; i++){//for verifica qual variável é fracionária e salva seu índice
             if((noTemp.solucao[i] > 0)&&(noTemp.solucao[i] < 1)){
                 marcar_indice = i;
@@ -217,18 +223,19 @@ int main()
         }
         if(marcar_indice != -1){ //verifica se existe variável fracionária
             variaveisFixadas[marcar_indice] = true; //fixa a varivel em true, se for para o lado esquerdo na descida muda-se para false
-            No filhoDireita;
-            No filhoEsquerda;
-            filhoDireita.capacidade_mochila = capacidade_mochila;
-            filhoEsquerda.capacidade_mochila = capacidade_mochila;
-            filhoDireita.funcao_objetivo = 0;
-            filhoEsquerda.funcao_objetivo = 0;
-            filhoDireita.solucao[marcar_indice] = 1; //fixando a variável para passar pra relaxação
-            filhoEsquerda.solucao[marcar_indice] = 0; //fixando a variável para passar pra relaxação
-            relaxacao_linear(filhoDireita);//usar o marcar_indice para fixar a variável na relaxação
-            relaxacao_linear(filhoEsquerda);//usar o marcar_indice para fixar a variável na relaxação
-            //botar uma condição na relaxação que se a capacidade da mochila estourar a mochila do nó = -1
+            
+            marcar_indice = 1; //fixando a variável para passar pra relaxação
+            relaxacao_linear(no, item, qtd_itens, capacidade_mochila, peso_item, valor_item, marcar_indice);//usar o marcar_indice para fixar a variável na relaxação
+            No filhoDireita = no; //a variável no quarda o local da memória na função (gambiarra)
+            
+            no.capacidade_mochila = 0;//zerando a variável no pra mandar os dados do outro filho(gambiarra)
+            no.funcao_objetivo = 0;
+            marcar_indice = 0; //fixando a variável para passar pra relaxação 
+            relaxacao_linear(no, item, qtd_itens, capacidade_mochila, peso_item, valor_item, marcar_indice);//usar o marcar_indice para fixar a variável na relaxação
+            No filhoEsquerda = no;//a variável no quarda o local da memória na função (gambiarra)
+            
             if((filhoDireita.capacidade_mochila == -1)&&(filhoEsquerda.capacidade_mochila == -1)){
+
                 cout << "soluções invalidas para os filhos, iteração" << cont << endl;
             }else if(filhoEsquerda.capacidade_mochila == -1){
                 arvore.push_front(filhoDireita);
@@ -253,15 +260,18 @@ int main()
                 melhorSolucaoInteira = noTemp.funcao_objetivo;
             }
             int size = arvore.size();
-            for(int i = 0; i < size; i++){
-                noAux = arvore.remove(); //tirando os itens da pilha
+            for(int i = 0; i < size; i++){ //este for tira todos os itens da pilha para verificar qual o melhor limite
+                noAux = arvore.front(); //variável no segura o primeiro item da pilha
+                arvore.pop_front(); //remove o primeiro item da pilha
                 if(melhorLimite < noAux.funcao_objetivo){ 
                     melhorLimite = noAux.funcao_objetivo; //guardando o maior limite
                 }
                 aux.push_front(noAux);
             }
-            for(int i = 0; i < size; i++){
-                arvore.push_front(aux.remove());//voltando os nós pra pilha original
+            for(int i = 0; i < size; i++){//este for volta todos os itens para a pilha
+                noAux = aux.front();
+                arvore.push_front(noAux);
+                aux.pop_front();//voltando os nós pra pilha original
             }
 
             gap = ((melhorLimite - melhorSolucaoInteira)/melhorSolucaoInteira); //cálculo do gap 
