@@ -3,6 +3,8 @@
         "*.html": "njk",
         "iostream": "cpp",
         "fstream": "cpp",
-        "ostream": "cpp"
+        "ostream": "cpp",
+        "deque": "cpp",
+        "list": "cpp"
     }
 }

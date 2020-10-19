@@ -43,11 +43,11 @@ void guloso(CUSTO_BENEFICIO *&item, int qtd_itens){
 }
 
 void relaxacao_linear(No &no, CUSTO_BENEFICIO *item, int qtd_itens, int capacidade_mochila, int *peso_itens, int *valor_itens, int *variaveisFixadas){
-    cout << "relaxação começa aqui" << endl;
-    cout << "solucao do no: " << no.solucao[0] << no.solucao[1] << no.solucao[2] << no.solucao[3] << no.solucao[4] << endl;
-    cout << "variaveis fixadas: " << variaveisFixadas[0] << variaveisFixadas[1] << variaveisFixadas[2] << variaveisFixadas[3] << variaveisFixadas[4] << endl;
     no.funcao_objetivo = 0;
     no.capacidade_mochila = capacidade_mochila;
+    for (int i = 0; i < qtd_itens; i++){
+        no.solucao[i] = 0;
+    }
 
     for(int i = 0; i < qtd_itens; i++){
        if(variaveisFixadas[i] == 1){
@@ -59,31 +59,16 @@ void relaxacao_linear(No &no, CUSTO_BENEFICIO *item, int qtd_itens, int capacida
        }
         
     }
-    cout << "capacidade da mochila antes do for: " << no.capacidade_mochila << endl;
     for(int i = 0; i < qtd_itens; i++){
-        if((peso_itens[item[i].chave] <= no.capacidade_mochila)&&(variaveisFixadas[i] == -1)){
+        if((peso_itens[item[i].chave] <= no.capacidade_mochila)&&(variaveisFixadas[item[i].chave] == -1)){
             no.solucao[item[i].chave] = 1;
-            cout << "DEBUG função objetivo: " << no.funcao_objetivo << endl;
-            cout << "DEBUG valor: " << valor_itens[item[i].chave] << endl;
-            cout << "DEBUG itemChave: " << item[i].chave << endl;
-            cout << "DEBUG i: " << i << endl;
             no.funcao_objetivo += valor_itens[item[i].chave];
-            cout << "DEBUG função objetivo: " << no.funcao_objetivo << endl;
             no.capacidade_mochila -= peso_itens[item[i].chave];
-            cout << "\nFIXADO: x" << item[i].chave << endl;
-            cout << "capacidade mochila: " << no.capacidade_mochila << endl;
-            cout << "funcao objetivo: " << no.funcao_objetivo << endl;
-        }else if((no.capacidade_mochila > 0)&&(variaveisFixadas[i] == -1)){
-            cout << "entrou no else" << endl;
-            cout << "capacidade da mochila: " << endl;
+        }else if((no.capacidade_mochila > 0)&&(variaveisFixadas[item[i].chave] == -1)){
             no.chave = item[i].chave + 1;
             no.solucao[item[i].chave] = (float)no.capacidade_mochila/peso_itens[item[i].chave];
-            cout << "solução fracionária: " << no.solucao[item[i].chave] << endl;
-            cout << "função objetivo1: " << no.funcao_objetivo << endl;
             no.funcao_objetivo += ((float)no.capacidade_mochila/peso_itens[item[i].chave])*valor_itens[item[i].chave];
-            cout << "função objetivo: " << no.funcao_objetivo << endl;
             no.capacidade_mochila -= ((float)no.capacidade_mochila/peso_itens[item[i].chave])*peso_itens[item[i].chave];
-            cout << "capacidade da mochila NO: " << no.capacidade_mochila << endl;
             break;
         }
 
@@ -91,19 +76,14 @@ void relaxacao_linear(No &no, CUSTO_BENEFICIO *item, int qtd_itens, int capacida
     if(no.capacidade_mochila < 0){
         no.capacidade_mochila = -1;
     }
-    cout << "-------------------------------" << endl;
-    cout << "solucao do no: " << no.solucao[0] << no.solucao[1] << no.solucao[2] << no.solucao[3] << no.solucao[4] << endl;
-    cout << "mochila apos fixar: " << no.capacidade_mochila << endl;
-    cout << "funcao objetivo: " << no.funcao_objetivo << endl;
 
     if(no.arvore.size()==0){
         no.arvore.push_back(no);
     }
-    cout << "solucao parcial -> [ ";
-    for(int i=0;i<qtd_itens;i++){
-        cout << no.solucao[i] << " ";
-    }
-    cout << "]" << endl << endl;
+    cout << "---------------------------------------------" << endl;
+    cout << "solucao do no: " << no.solucao[0] << " " << no.solucao[1] << " " << no.solucao[2] << " " << no.solucao[3] << " " << no.solucao[4] << endl;
+    cout << "capacidade da mochila: " << no.capacidade_mochila << endl;
+    cout << "funcao objetivo: " << no.funcao_objetivo << endl;
 }
 
 int main()
@@ -167,7 +147,7 @@ int main()
 
     guloso(item,qtd_itens);
 
-    cout << "# Relacao custo/beneficio apos GULOSO: ";
+    cout << "# Relacao custo/beneficio apos ORDENACAO: ";
     for(int i=0;i<qtd_itens;i++){
         cout << "[" << item[i].chave << "]" << item[i].custo_beneficio << " ";
     }
@@ -175,7 +155,6 @@ int main()
 
     relaxacao_linear(no,item,qtd_itens,capacidade_mochila,peso_item,valor_item,variaveisFixadas);
     arvore.push_front(no);
-    cout << "\n[indice No] -> " << no.chave << "\n[Funcao objetivo] -> " << no.funcao_objetivo << "\n[capacidade mochila] -> " << no.capacidade_mochila << endl;
 
     //esboço de como ficará a descida.
     float melhorSolucaoInteira = 0; //melhor solução inteira - MSI do vídeo
@@ -189,49 +168,76 @@ int main()
     list<No>aux;
 
     while(stop){   
-        cout << "cont: " << cont << endl;
+        cout << "__________________________________________________" << endl;
+        cout << "tamanho da pilha: " << arvore.size() << endl;
+        cout << "variaveis fixadas: " << variaveisFixadas[0] << " " << variaveisFixadas[1] << " " << variaveisFixadas[2] << " " << variaveisFixadas[3] << " " << variaveisFixadas[4] << endl;
         noTemp = arvore.front(); //variável no segura o primeiro item da pilha
+        cout << "variavel fracionaria na arvore: " << arvore.front().solucao[0] << endl;
+        cout << "variavel fracionaria na arvore: " << arvore.front().solucao[1] << endl;
+        cout << "variavel fracionaria na arvore: " << arvore.front().solucao[2] << endl;
+        cout << "variavel fracionaria na arvore: " << arvore.front().solucao[3] << endl;
+        cout << "variavel fracionaria na arvore: " << arvore.front().solucao[4] << endl;
         arvore.pop_front(); //remove o primeiro item da pilha
         for (int i = 0; i < qtd_itens; i++){//for verifica qual variável é fracionária e salva seu índice
             if((noTemp.solucao[i] > 0)&&(noTemp.solucao[i] < 1)){
                 marcar_indice = i;
-                cout << "indice da fracionária" << marcar_indice << endl;
             }   
         }
+        cout << "pegou a FO: " << noTemp.funcao_objetivo << endl;
+        cout << "variavel fracionaria: " << marcar_indice << endl;
         if(marcar_indice != -1){ //verifica se existe variável fracionária
             variaveisFixadas[marcar_indice] = 1; //fixa a varivel em true, se for para o lado esquerdo na descida muda-se para false
-            cout << "entrou" << endl;
-            marcar_indice = 1; //fixando a variável para passar pra relaxação
-            cout << "solucao direita: " << no.solucao[0] << endl;
+            cout << "filho da direita: " << endl;           
             relaxacao_linear(no, item, qtd_itens, capacidade_mochila, peso_item, valor_item, variaveisFixadas);//usar o marcar_indice para fixar a variável na relaxação
-            cout << "solucao direita após relaxação: " << no.solucao[0] << endl;
             No filhoDireita = no; //a variável no quarda o local da memória na função (gambiarra)
-            cout << "solução filho direita: " << filhoDireita.solucao[0] << endl;
-            no.capacidade_mochila = 0;//zerando a variável no pra mandar os dados do outro filho(gambiarra)
-            no.funcao_objetivo = 0;
-            marcar_indice = 0; //fixando a variável para passar pra relaxação 
-            relaxacao_linear(no, item, qtd_itens, capacidade_mochila, peso_item, valor_item, variaveisFixadas);//usar o marcar_indice para fixar a variável na relaxação
+            cout << "FO: " << filhoDireita.funcao_objetivo << endl;
+            cout << "variavel fracionaria: " << marcar_indice << endl;
+            cout << "variaveis fixadas: " << variaveisFixadas[0] << " " << variaveisFixadas[1] << " " << variaveisFixadas[2] << " " << variaveisFixadas[3] << " " << variaveisFixadas[4] << endl;
+            
+            cout << "filho da esquerda: " << endl; 
+            variaveisFixadas[marcar_indice] = 0;
+            relaxacao_linear(no, item, qtd_itens, capacidade_mochila, peso_item, valor_item, variaveisFixadas);//usar o marcar_indice para fixar a variável na relaxação            
             No filhoEsquerda = no;//a variável no quarda o local da memória na função (gambiarra)
-            cout << "solução filho esquerda: " << filhoEsquerda.solucao[0] << endl;
+            cout << "FO: " << filhoEsquerda.funcao_objetivo << endl;
+            cout << "variavel fracionaria: " << marcar_indice << endl;
+            cout << "variaveis fixadas: " << variaveisFixadas[0] << " " << variaveisFixadas[1] << " " << variaveisFixadas[2] << " " << variaveisFixadas[3] << " " << variaveisFixadas[4] << endl;
+
             if((filhoDireita.capacidade_mochila == -1)&&(filhoEsquerda.capacidade_mochila == -1)){
                 cout << "soluções invalidas para os filhos, iteração" << cont << endl;
             }else if(filhoEsquerda.capacidade_mochila == -1){
+                variaveisFixadas[marcar_indice] = 1;
                 arvore.push_front(filhoDireita);
                 cout << "filho da esquerda poda por inviabilidade" << endl;
             }else if(filhoDireita.capacidade_mochila == -1){
                 arvore.push_front(filhoEsquerda);
                 variaveisFixadas[marcar_indice] = 0;
                 cout << "filho da direita poda por inviabilidade" << endl;
-            }else{
-                if(filhoDireita.funcao_objetivo > filhoEsquerda.funcao_objetivo){ //verificação de qual é o melhor filho baseado no valor da função objetivo
+            }else if(filhoDireita.funcao_objetivo > filhoEsquerda.funcao_objetivo){ //verificação de qual é o melhor filho baseado no valor da função objetivo
                     arvore.push_front(filhoEsquerda); //desce pra direita
+                    cout << "AQUI" << endl;
+                    cout << "variavel fracionaria na arvore: " << arvore.front().solucao[0] << endl;
+                    cout << "variavel fracionaria na arvore: " << arvore.front().solucao[1] << endl;
+                    cout << "variavel fracionaria na arvore: " << arvore.front().solucao[2] << endl;
+                    cout << "variavel fracionaria na arvore: " << arvore.front().solucao[3] << endl;
+                    cout << "variavel fracionaria na arvore: " << arvore.front().solucao[4] << endl;
                     arvore.push_front(filhoDireita);
+                    cout << arvore.size() << endl;
+                    variaveisFixadas[marcar_indice] = 1;
+                    cout << "desceu pra direita" << endl;
+                    
+                    cout << "variaveis fixadas: " << variaveisFixadas[0] << " " << variaveisFixadas[1] << " " << variaveisFixadas[2] << " " << variaveisFixadas[3] << " " << variaveisFixadas[4] << endl;
+                    cout << "variavel fracionaria na arvore: " << arvore.front().solucao[0] << endl;
+                    cout << "variavel fracionaria na arvore: " << arvore.front().solucao[1] << endl;
+                    cout << "variavel fracionaria na arvore: " << arvore.front().solucao[2] << endl;
+                    cout << "variavel fracionaria na arvore: " << arvore.front().solucao[3] << endl;
+                    cout << "variavel fracionaria na arvore: " << arvore.front().solucao[4] << endl;
                 }else{
                     arvore.push_front(filhoDireita); //desce pra esquerda
                     arvore.push_front(filhoEsquerda);
                     variaveisFixadas[marcar_indice] = 0;
-                }
-            }         
+                    cout << "desceu pra esquerda" << endl;
+                    cout << "variaveis fixadas: " << variaveisFixadas[0] << " " << variaveisFixadas[1] << " " << variaveisFixadas[2] << " " << variaveisFixadas[3] << " " << variaveisFixadas[4] << endl;
+                }         
             
         }else{ //guardar a melhor solução inteira.
             if(melhorSolucaoInteira < noTemp.funcao_objetivo){
@@ -259,8 +265,7 @@ int main()
             cout << "GAP: " << gap << endl;
         }
 
-
-        if(cont == 10){stop = false;};
+        if(cont == 3){stop = false;};
         cont++;
         marcar_indice = -1;
         if(arvore.size() == 0){stop = false;};
