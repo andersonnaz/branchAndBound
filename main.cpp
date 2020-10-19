@@ -42,57 +42,48 @@ void guloso(CUSTO_BENEFICIO *&item, int qtd_itens){
     }
 }
 
-void relaxacao_linear(No &no, CUSTO_BENEFICIO *item, int qtd_itens, int capacidade_mochila, int *peso_itens, int *valor_itens, int marcar_indice){
+void relaxacao_linear(No &no, CUSTO_BENEFICIO *item, int qtd_itens, int capacidade_mochila, int *peso_itens, int *valor_itens, int *variaveisFixadas){
+    cout << "relaxação começa aqui" << endl;
+    cout << "solucao do no: " << no.solucao[0] << no.solucao[1] << no.solucao[2] << no.solucao[3] << no.solucao[4] << endl;
+    cout << "variaveis fixadas: " << variaveisFixadas[0] << variaveisFixadas[1] << variaveisFixadas[2] << variaveisFixadas[3] << variaveisFixadas[4] << endl;
     no.funcao_objetivo = 0;
     no.capacidade_mochila = capacidade_mochila;
 
-    if(marcar_indice > 0){
-        no.funcao_objetivo = valor_itens[marcar_indice-1];
-        no.capacidade_mochila -= peso_itens[marcar_indice-1];
-
-        for(int i=0;i<qtd_itens;i++){
-            if(i!= marcar_indice-1){
-                no.solucao[i] = 0;
-            }
-            else{
-                no.solucao[i] = 1;
-            }
-        }
+    for(int i = 0; i < qtd_itens; i++){
+       if(variaveisFixadas[i] == 1){
+           no.funcao_objetivo += valor_itens[i];
+           no.capacidade_mochila -= peso_itens[i];
+           no.solucao[i] = 1;
+       }else if(variaveisFixadas[i] == 0){
+           no.solucao[i] = 0;
+       }
+        
     }
-    else if(marcar_indice < 0){
-        marcar_indice = -(marcar_indice);
-        no.funcao_objetivo = 0;
-        no.capacidade_mochila = capacidade_mochila;
-
-        for(int i=0;i<qtd_itens;i++){
-            no.solucao[i] = 0;
-        }
-    }
-
-    cout << "---------------------------------------\nChave No: " << no.chave << endl;
-    cout << "[capacidade mochila]: " << no.capacidade_mochila << endl;
-    cout << "[funcao objetivo]: " << no.funcao_objetivo << endl;
-
-    for(int i=0;i<qtd_itens;i++){
-        if((peso_itens[item[i].chave] <= no.capacidade_mochila)&&(i != item[marcar_indice-1].chave)){
+    cout << "capacidade da mochila antes do for: " << no.capacidade_mochila << endl;
+    for(int i = 0; i < qtd_itens; i++){
+        if((peso_itens[item[i].chave] <= no.capacidade_mochila)&&(variaveisFixadas[i] == -1)){
             no.solucao[item[i].chave] = 1;
+            cout << "DEBUG função objetivo: " << no.funcao_objetivo << endl;
+            cout << "DEBUG valor: " << valor_itens[item[i].chave] << endl;
+            cout << "DEBUG itemChave: " << item[i].chave << endl;
+            cout << "DEBUG i: " << i << endl;
             no.funcao_objetivo += valor_itens[item[i].chave];
+            cout << "DEBUG função objetivo: " << no.funcao_objetivo << endl;
             no.capacidade_mochila -= peso_itens[item[i].chave];
-
-            cout << "\n[capacidade mochila]: " << no.capacidade_mochila << endl;
-            cout << "[funcao objetivo]: " << no.funcao_objetivo << endl;
-        }
-        else if((no.capacidade_mochila > 0)&&(i != item[marcar_indice-1].chave)){
+            cout << "\nFIXADO: x" << item[i].chave << endl;
+            cout << "capacidade mochila: " << no.capacidade_mochila << endl;
+            cout << "funcao objetivo: " << no.funcao_objetivo << endl;
+        }else if((no.capacidade_mochila > 0)&&(variaveisFixadas[i] == -1)){
+            cout << "entrou no else" << endl;
+            cout << "capacidade da mochila: " << endl;
             no.chave = item[i].chave + 1;
-            marcar_indice = no.chave;
             no.solucao[item[i].chave] = (float)no.capacidade_mochila/peso_itens[item[i].chave];
-
+            cout << "solução fracionária: " << no.solucao[item[i].chave] << endl;
+            cout << "função objetivo1: " << no.funcao_objetivo << endl;
             no.funcao_objetivo += ((float)no.capacidade_mochila/peso_itens[item[i].chave])*valor_itens[item[i].chave];
+            cout << "função objetivo: " << no.funcao_objetivo << endl;
             no.capacidade_mochila -= ((float)no.capacidade_mochila/peso_itens[item[i].chave])*peso_itens[item[i].chave];
-
-            cout << "\n[capacidade mochila]: " << no.capacidade_mochila << endl;
-            cout << "[funcao objetivo]: " << no.funcao_objetivo << endl;
-
+            cout << "capacidade da mochila NO: " << no.capacidade_mochila << endl;
             break;
         }
 
@@ -100,8 +91,11 @@ void relaxacao_linear(No &no, CUSTO_BENEFICIO *item, int qtd_itens, int capacida
     if(no.capacidade_mochila < 0){
         no.capacidade_mochila = -1;
     }
+    cout << "-------------------------------" << endl;
+    cout << "solucao do no: " << no.solucao[0] << no.solucao[1] << no.solucao[2] << no.solucao[3] << no.solucao[4] << endl;
+    cout << "mochila apos fixar: " << no.capacidade_mochila << endl;
+    cout << "funcao objetivo: " << no.funcao_objetivo << endl;
 
-    cout << "<<" << marcar_indice << ">>\n";
     if(no.arvore.size()==0){
         no.arvore.push_back(no);
     }
@@ -112,19 +106,13 @@ void relaxacao_linear(No &no, CUSTO_BENEFICIO *item, int qtd_itens, int capacida
     cout << "]" << endl << endl;
 }
 
-int verificarVariavelFracionaria(){
-
-    return 0;
-}
-
-
-
 int main()
 {
     int qtd_itens;
     int capacidade_mochila;
     int *valor_item;
     int *peso_item;
+    int *variaveisFixadas; // fixar em 1 quando for para direita, 0 quando for para esquerda, -1 deafult
     list<No>arvore;
     No no;
 
@@ -136,6 +124,8 @@ int main()
 
 	valor_item = new int[qtd_itens];
 	peso_item = new int[qtd_itens];
+    variaveisFixadas = new int[qtd_itens];
+
     no.chave = 0;
     no.funcao_objetivo = 0;
     no.capacidade_mochila = capacidade_mochila;
@@ -144,6 +134,7 @@ int main()
     for(int i=0;i<qtd_itens;i++){
         arqEntrada >> valor_item[i];
         no.solucao[i] = 0;
+        variaveisFixadas[i] = -1; //inicializando o vetor de variáveis fixadas
     }
     for(int i=0;i<qtd_itens;i++){
         arqEntrada >> peso_item[i];
@@ -182,23 +173,9 @@ int main()
     }
     cout << "\n" << endl;
 
-    int marcar_indice = 0;
-    relaxacao_linear(no,item,qtd_itens,capacidade_mochila,peso_item,valor_item,marcar_indice);
+    relaxacao_linear(no,item,qtd_itens,capacidade_mochila,peso_item,valor_item,variaveisFixadas);
     arvore.push_front(no);
     cout << "\n[indice No] -> " << no.chave << "\n[Funcao objetivo] -> " << no.funcao_objetivo << "\n[capacidade mochila] -> " << no.capacidade_mochila << endl;
-
-    marcar_indice = 1;
-    relaxacao_linear(no,item,qtd_itens,capacidade_mochila,peso_item,valor_item,marcar_indice);
-    arvore.push_front(no);
-    cout << "\n[indice No] -> " << no.chave << "\n[Funcao objetivo] -> " << no.funcao_objetivo << "\n[capacidade mochila] -> " << no.capacidade_mochila << endl;
-
-
-    marcar_indice = -1;
-    relaxacao_linear(no,item,qtd_itens,capacidade_mochila,peso_item,valor_item,marcar_indice);
-    arvore.push_front(no);
-    cout << "\n[indice No] -> " << no.chave << "\n[Funcao objetivo] -> " << no.funcao_objetivo << "\n[capacidade mochila] -> " << no.capacidade_mochila << endl;
-
-    
 
     //esboço de como ficará a descida.
     float melhorSolucaoInteira = 0; //melhor solução inteira - MSI do vídeo
@@ -208,8 +185,7 @@ int main()
     int cont = 0;
     No noTemp;
     No noAux;
-    bool variaveisFixadas[qtd_itens]; // true fixada em 1, false fixada em 0
-    marcar_indice = -1; //se o indice passar do for com valor = -1 não existe variável fracionária
+    int marcar_indice = -1; //se o indice passar do for com valor = -1 não existe variável fracionária
     list<No>aux;
 
     while(stop){   
@@ -219,30 +195,32 @@ int main()
         for (int i = 0; i < qtd_itens; i++){//for verifica qual variável é fracionária e salva seu índice
             if((noTemp.solucao[i] > 0)&&(noTemp.solucao[i] < 1)){
                 marcar_indice = i;
+                cout << "indice da fracionária" << marcar_indice << endl;
             }   
         }
         if(marcar_indice != -1){ //verifica se existe variável fracionária
-            variaveisFixadas[marcar_indice] = true; //fixa a varivel em true, se for para o lado esquerdo na descida muda-se para false
-            
+            variaveisFixadas[marcar_indice] = 1; //fixa a varivel em true, se for para o lado esquerdo na descida muda-se para false
+            cout << "entrou" << endl;
             marcar_indice = 1; //fixando a variável para passar pra relaxação
-            relaxacao_linear(no, item, qtd_itens, capacidade_mochila, peso_item, valor_item, marcar_indice);//usar o marcar_indice para fixar a variável na relaxação
+            cout << "solucao direita: " << no.solucao[0] << endl;
+            relaxacao_linear(no, item, qtd_itens, capacidade_mochila, peso_item, valor_item, variaveisFixadas);//usar o marcar_indice para fixar a variável na relaxação
+            cout << "solucao direita após relaxação: " << no.solucao[0] << endl;
             No filhoDireita = no; //a variável no quarda o local da memória na função (gambiarra)
-            
+            cout << "solução filho direita: " << filhoDireita.solucao[0] << endl;
             no.capacidade_mochila = 0;//zerando a variável no pra mandar os dados do outro filho(gambiarra)
             no.funcao_objetivo = 0;
             marcar_indice = 0; //fixando a variável para passar pra relaxação 
-            relaxacao_linear(no, item, qtd_itens, capacidade_mochila, peso_item, valor_item, marcar_indice);//usar o marcar_indice para fixar a variável na relaxação
+            relaxacao_linear(no, item, qtd_itens, capacidade_mochila, peso_item, valor_item, variaveisFixadas);//usar o marcar_indice para fixar a variável na relaxação
             No filhoEsquerda = no;//a variável no quarda o local da memória na função (gambiarra)
-            
+            cout << "solução filho esquerda: " << filhoEsquerda.solucao[0] << endl;
             if((filhoDireita.capacidade_mochila == -1)&&(filhoEsquerda.capacidade_mochila == -1)){
-
                 cout << "soluções invalidas para os filhos, iteração" << cont << endl;
             }else if(filhoEsquerda.capacidade_mochila == -1){
                 arvore.push_front(filhoDireita);
                 cout << "filho da esquerda poda por inviabilidade" << endl;
             }else if(filhoDireita.capacidade_mochila == -1){
                 arvore.push_front(filhoEsquerda);
-                variaveisFixadas[marcar_indice] = false;
+                variaveisFixadas[marcar_indice] = 0;
                 cout << "filho da direita poda por inviabilidade" << endl;
             }else{
                 if(filhoDireita.funcao_objetivo > filhoEsquerda.funcao_objetivo){ //verificação de qual é o melhor filho baseado no valor da função objetivo
@@ -251,7 +229,7 @@ int main()
                 }else{
                     arvore.push_front(filhoDireita); //desce pra esquerda
                     arvore.push_front(filhoEsquerda);
-                    variaveisFixadas[marcar_indice] = false;
+                    variaveisFixadas[marcar_indice] = 0;
                 }
             }         
             
